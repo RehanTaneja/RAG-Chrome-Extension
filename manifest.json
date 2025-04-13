@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Text Highlighter and Processor",
+  "version": "1.0",
+  "description": "A Chrome extension to highlight text, send it to a backend, and process PDFs.",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}

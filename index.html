@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset = "UTF-8">
+    <meta name = "viewport" content = "width=device-width, initial-scale=3.0">
+    <title>Research paper toolkit</title>
+
+    <style>
+        body {
+          width: 400px;
+          padding: 10px;
+          font-family: Arial, sans-serif;
+        }
+      
+        #highlightedText {
+          max-width: 100%;
+          white-space: pre-wrap;
+        }
+      </style>
+
+</head>
+<body>
+    <h1>Research Paper toolkit</h1>
+    <p>we mainly do three main functions- take in a highlighted text (that goes into the AI model
+        the ai model return a string that is shown on the extension), gives a synopsis?- not really
+        sure about this.</p> 
+
+
+    <label for="dropdown">Choose an option:</label>
+    <select id="dropdown" name="dropdown">
+        <option value="summaryOption">Get the summary</option>
+        <option value="synopsisOption">Get the synopsis</option>
+        <option value="linkOption">Get the link</option>
+    </select>
+
+    <p id="highlightedText">Get Highlighted Text-this should work when automatically selected</p>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
