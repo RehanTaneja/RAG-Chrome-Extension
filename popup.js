@@ -124,10 +124,10 @@ function captureSelectedText(callback) {
             const result = injectionResults?.[0]?.result;
             if (result) {
                 chrome.storage.local.set({ selectedText: result }, () => {
-                console.log("Selected text stored:", result);
+                    console.log("Selected text stored:", result);
+                    callback();
                 });
             }
-            callback();
     });
 
     });
