@@ -10,22 +10,19 @@ dropdown.addEventListener("change", function () {
     output.textContent = "Please select an option.";
     return;
     }
-    getSelectedText((selectedText) => {
-    // if (!selectedText) {
-    //     output.textContent = "No text is selected on the page.";
-    //     return;
-    // }
+captureSelectedText(); // Inject selection-grabbing code first
+setTimeout(() => {
+  getSelectedText((selectedText) => {
+    if (dropdown.value === 'summaryOption') {
+      sendTextToFlask(selectedText);
+    } else if (dropdown.value === 'synopsisOption') {
+      output.textContent = "Synopsis generation coming soon...";
+    } else if (dropdown.value === 'linkOption') {
+      output.textContent = "Linking option coming soon...";
+    }
+  });
+}, 300); // Give it 300ms to finish injecting and storing
 
-        // For this example, act on the "summaryOption" directly.
-        if (selectedOption === 'summaryOption') {
-            sendTextToFlask(selectedText);
-        } else if (selectedOption === 'synopsisOption') {
-            output.textContent = "Synopsis generation coming soon...";
-        } else if (selectedOption === 'linkOption') {
-            output.textContent = "Linking option coming soon...";
-        }
-    });
-    });
 
 /**
  * Retrieves the last selected text from chrome.storage.
