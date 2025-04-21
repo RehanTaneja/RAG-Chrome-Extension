@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>PDF Clipboard Listener</title>
+    <style>
+      body {
+        width: 300px;
+        font-family: Arial, sans-serif;
+        padding: 10px;
+      }
+      #copiedText {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        border: 1px solid #ccc;
+        padding: 5px;
+        height: 150px;
+        overflow-y: auto;
+      }
+      #refresh {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Last Copied Text</h3>
+    <div id="copiedText">No text copied yet.</div>
+    <button id="refresh">Refresh</button>
+    <script src="popup.js"></script>
+  </body>
+</html>
