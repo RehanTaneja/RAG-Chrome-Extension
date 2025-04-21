@@ -118,3 +118,46 @@ function sendTextToFlask(text) {
     });
   });
 }
+
+// UI elements for manual text entry
+const manualToggle = document.getElementById('manualToggle');
+const manualTextarea = document.getElementById('manualTextarea');
+const manualControls = document.getElementById('manualControls');
+const saveManualTextButton = document.getElementById('saveManualText');
+const clearButton = document.getElementById('clearButton');
+
+// Toggle manual text entry
+manualToggle.addEventListener('click', function() {
+  if (manualTextarea.style.display === 'none' || !manualTextarea.style.display) {
+    manualTextarea.style.display = 'block';
+    manualControls.style.display = 'flex';
+    manualToggle.textContent = 'Hide manual text entry';
+  } else {
+    manualTextarea.style.display = 'none';
+    manualControls.style.display = 'none';
+    manualToggle.textContent = "Can't select text? Click here to enter text manually";
+  }
+});
+
+// Save manually entered text
+saveManualTextButton.addEventListener('click', function() {
+  const text = manualTextarea.value.trim();
+  if (text) {
+    chrome.storage.local.set({selectedText: text}, () => {
+      displaySelection(text);
+      manualTextarea.style.display = 'none';
+      manualControls.style.display = 'none';
+      manualToggle.textContent = "Can't select text? Click here to enter text manually";
+    });
+  } else {
+    manualTextarea.placeholder = "Please enter some text first...";
+  }
+});
+
+// Clear button handler
+clearButton.addEventListener('click', function() {
+  chrome.storage.local.remove('selectedText', function() {
+    selectionContainer.textContent = "No text captured yet";
+    manualTextarea.value = "";
+  });
+});
