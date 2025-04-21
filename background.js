@@ -1,14 +1,12 @@
 // background.js
-console.log("[Background] Service worker started");
+console.log("Background script started");
 
-// Listen for messages from content script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "textSelected") {
-        // Store the selected text in chrome.storage
-        chrome.storage.local.set({ selectedText: message.text }, () => {
-            console.log("[Background] Text stored from content script");
-            sendResponse({ success: true });
-        });
-    }
-    return true; // Keep the message channel open for async response
+// Store selection when received from content script
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message.action === 'pdfTextSelected' || message.action === 'textSelected') {
+    console.log("Background received selection, storing it");
+    chrome.storage.local.set({selectedText: message.text}, function() {
+      console.log("Background stored selection");
+    });
+  }
 });
