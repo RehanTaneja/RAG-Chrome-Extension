@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PDF.js Viewer</title>
+  <style>
+    body { margin: 0; overflow: auto; }
+    #container { position: relative; }
+    canvas { display: block; margin: auto; }
+    .textLayer {
+      position: absolute; top: 0; left: 0;
+      pointer-events: none;
+      font-family: sans-serif;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <canvas id="pdf-canvas"></canvas>
+    <div id="textLayer" class="textLayer"></div>
+  </div>
+
+  <script src="pdf.js"></script>
+  <script>
+    const urlParam = new URL(location).searchParams.get('file');
+    const pdfUrl = decodeURIComponent(urlParam);
+
+    // configure PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('pdf.worker.js');
+
+    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+      pdf.getPage(1).then(page => {
+        const scale = 1.5;
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.getElementById('pdf-canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        page.render({ canvasContext: canvas.getContext('2d'), viewport });
+
+        page.getTextContent().then(textContent => {
+          pdfjsLib.renderTextLayer({
+            textContent,
+            container: document.getElementById('textLayer'),
+            viewport,
+            textDivs: []
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>
