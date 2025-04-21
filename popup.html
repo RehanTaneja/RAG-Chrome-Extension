@@ -1,6 +1,6 @@
 <!DOCTYPE html>
- <html>
- <head>
+<html>
+<head>
   <title>PDF Text Extractor</title>
   <style>
     body {
@@ -8,13 +8,16 @@
       font-family: Arial, sans-serif;
       padding: 15px;
     }
+
     h2 {
       margin-top: 0;
       color: #333;
     }
+
     .section {
       margin-bottom: 15px;
     }
+
     #selectionContainer {
       border: 1px solid #ddd;
       padding: 10px;
@@ -23,169 +26,10 @@
       background-color: #f9f9f9;
       font-size: 14px;
       line-height: 1.4;
+      white-space: pre-wrap;
     }
+
     .controls {
       margin: 10px 0;
       display: flex;
       gap: 5px;
-    }
-    button {
-      background-color: #4285f4;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    button:hover {
-      background-color: #3367d6;
-    }
-    #manualTextarea {
-      width: 100%;
-      height: 100px;
-      padding: 8px;
-      margin-top: 5px;
-      font-family: Arial, sans-serif;
-      display: none;
-    }
-    select {
-      padding: 8px;
-      width: 100%;
-      margin-bottom: 15px;
-    }
-    #output {
-      border: 1px solid #ddd;
-      padding: 10px;
-      background-color: #f9f9f9;
-      min-height: 60px;
-    }
-    .instructions {
-      font-style: italic;
-      color: #666;
-      margin-bottom: 10px;
-    }
-    .toggle {
-      margin-top: 10px;
-      color: #4285f4;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <h2>PDF Text Extractor</h2>
-  
-  <div class="instructions">
-    Select text in your PDF, then click "Capture Selection" below
-  </div>
-  
-  <div class="section">
-    <div id="selectionContainer">No text captured yet</div>
-    
-    <div class="controls">
-      <button id="captureButton">Capture Selection</button>
-      <button id="clearButton">Clear</button>
-    </div>
-    
-    <div class="toggle" id="manualToggle">Can't select text? Click here to enter text manually</div>
-    <textarea id="manualTextarea" placeholder="Paste or type text here..."></textarea>
-    <div class="controls" id="manualControls" style="display: none;">
-      <button id="saveManualText">Save Text</button>
-    </div>
-  </div>
-  
-  <div class="section">
-    <select id="actionDropdown">
-      <option value="">-- Select Action --</option>
-      <option value="summaryOption">Generate Summary</option>
-      <option value="synopsisOption">Create Synopsis</option>
-      <option value="linkOption">Find Related Links</option>
-    </select>
-  </div>
-  
-  <div class="section">
-    <div id="output">Results will appear here</div>
-  </div>
-  
-  <script src="popup.js"></script>
-</body>
-</html>
-       border-radius: 4px;
-     }
-     button:hover {
-       background-color: #3367d6;
-     }
-     #manualTextarea {
-       width: 100%;
-       height: 100px;
-       padding: 8px;
-       margin-top: 5px;
-       font-family: Arial, sans-serif;
-       display: none;
-     }
-     select {
-       padding: 8px;
-       width: 100%;
-       margin-bottom: 15px;
-     }
-     #output {
-       border: 1px solid #ddd;
-       padding: 10px;
-       background-color: #f9f9f9;
-       min-height: 60px;
-     }
-     .instructions {
-       font-style: italic;
-       color: #666;
-       margin-bottom: 10px;
-     }
-     .toggle {
-       margin-top: 10px;
-       color: #4285f4;
-       cursor: pointer;
-       text-decoration: underline;
-     }
-     body { font-family: sans-serif; padding: 10px; width: 300px; }
-     #output { white-space: pre-wrap; margin-top: 10px; }
-   </style>
- </head>
- <body>
-   <h2>PDF Text Extractor</h2>
-   
-   <div class="instructions">
-     Select text in your PDF, then click "Capture Selection" below
-   </div>
-   
-   <div class="section">
-     <div id="selectionContainer">No text captured yet</div>
-     
-     <div class="controls">
-       <button id="captureButton">Capture Selection</button>
-       <button id="clearButton">Clear</button>
-     </div>
-     
-     <div class="toggle" id="manualToggle">Can't select text? Click here to enter text manually</div>
-     <textarea id="manualTextarea" placeholder="Paste or type text here..."></textarea>
-     <div class="controls" id="manualControls" style="display: none;">
-       <button id="saveManualText">Save Text</button>
-     </div>
-   </div>
-   
-   <div class="section">
-     <select id="actionDropdown">
-       <option value="">-- Select Action --</option>
-       <option value="summaryOption">Generate Summary</option>
-       <option value="synopsisOption">Create Synopsis</option>
-       <option value="linkOption">Find Related Links</option>
-     </select>
-   </div>
-   
-   <div class="section">
-     <div id="output">Results will appear here</div>
-   </div>
-   
-   <button id="extract-btn">Extract Selected Text</button>
-   <div id="output"></div>
-   <script src="popup.js"></script>
- </body>
- </html>
