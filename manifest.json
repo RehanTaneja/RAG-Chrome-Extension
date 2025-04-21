@@ -1,12 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Text Highlighter and Processor",
+  "name": "Research Paper Toolkit",
   "version": "1.0",
-  "description": "A Chrome extension to highlight text, send it to a backend, and process PDFs.",
-  "permissions": ["activeTab", "scripting"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": ["tabs", "activeTab", "scripting", "storage"
+],
+  "host_permissions": ["file://*/*", "*://*/*",  "<all_urls>", "http://127.0.0.1/*"
+  
+],
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "index.html",
+    "default_title": "Research Paper Toolkit"
   },
   "content_scripts": [
     {
