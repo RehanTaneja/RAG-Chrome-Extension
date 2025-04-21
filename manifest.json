@@ -5,6 +5,7 @@
   "description": "Extract text from PDFs",
   "permissions": [
     "activeTab",
+    "tabs",
     "scripting",
     "storage"
   ],
