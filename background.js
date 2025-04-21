@@ -16,7 +16,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     chrome.scripting.executeScript({
       target: { tabId, allFrames: true },
       files: ['content.js'],
-+     world: 'MAIN'
+      world: 'MAIN'
     });
   }
 });
