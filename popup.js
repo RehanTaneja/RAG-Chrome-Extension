@@ -1,82 +1,58 @@
 // popup.js
 console.log("Popup opened");
 
-const dropdown = document.getElementById('dropdown');
+const actionDropdown = document.getElementById('actionDropdown');
 const selectionContainer = document.getElementById('selectionContainer');
 const output = document.getElementById('output');
-const refreshButton = document.getElementById('refreshButton');
+const captureButton = document.getElementById('captureButton');
 
-// When popup opens, check for stored text selection
+// When popup opens, load any stored selection
 document.addEventListener('DOMContentLoaded', function() {
-  console.log("Popup DOM loaded, checking for selections");
-  checkForStoredSelection();
-  requestFreshSelection();
-  
-  // Listen for selection updates from content script
-  chrome.runtime.onMessage.addListener(function(message) {
-    if (message.action === "selectionUpdated") {
-      console.log("Popup received selection update");
-      displaySelection(message.text);
-    }
-  });
+  loadStoredSelection();
 });
 
-// Check for stored selection
-function checkForStoredSelection() {
+// Load any previously stored selection
+function loadStoredSelection() {
   chrome.storage.local.get('selectedText', function(data) {
-    console.log("Checking storage for selection:", data);
+    console.log("Checking stored selection:", data);
     if (data.selectedText) {
       displaySelection(data.selectedText);
     }
   });
 }
 
-// Request fresh selection from content script
-function requestFreshSelection() {
-  selectionContainer.textContent = "Refreshing...";
+// Capture button click handler
+captureButton.addEventListener('click', function() {
+  selectionContainer.textContent = "Capturing selection...";
   
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    if (!tabs || !tabs.length) return;
+  chrome.runtime.sendMessage({action: "captureSelection"}, function(response) {
+    console.log("Capture response:", response);
     
-    chrome.tabs.sendMessage(tabs[0].id, {action: "getSelection"}, function(response) {
-      if (chrome.runtime.lastError) {
-        console.log("Error requesting selection:", chrome.runtime.lastError.message);
-        selectionContainer.textContent = "Could not connect to page. Make sure you're viewing a PDF.";
-        return;
-      }
-      
-      if (response && response.text) {
-        console.log("Received fresh selection from content script");
-        displaySelection(response.text);
-      } else {
-        console.log("No selection received from content script");
-        // Keep previous selection if we have it, otherwise show no selection
-        chrome.storage.local.get('selectedText', function(data) {
-          if (!data.selectedText) {
-            selectionContainer.textContent = "No text selected. Please select text in your PDF.";
-          }
-        });
-      }
-    });
+    if (response.error) {
+      selectionContainer.textContent = "Error: " + response.error;
+    } else if (response.text) {
+      displaySelection(response.text);
+    } else {
+      selectionContainer.textContent = "No text selected. Please select text in your document and try again.";
+    }
   });
-}
+});
 
-// Display selection in the UI
+// Display the selection in the UI
 function displaySelection(text) {
   if (!text) {
-    selectionContainer.textContent = "No text selected. Please select text in your PDF.";
+    selectionContainer.textContent = "No text selected";
     return;
   }
   
-  // Display the selection
   selectionContainer.textContent = text;
 }
 
 // Process dropdown selection
-dropdown.addEventListener('change', function() {
-  const selectedOption = dropdown.value;
+actionDropdown.addEventListener('change', function() {
+  const selectedOption = actionDropdown.value;
   if (!selectedOption) {
-    output.textContent = "Please select an option.";
+    output.textContent = "Please select an action";
     return;
   }
   
@@ -84,11 +60,10 @@ dropdown.addEventListener('change', function() {
     const selectedText = data.selectedText;
     
     if (!selectedText) {
-      output.textContent = "No text selected. Please select text in your document first.";
+      output.textContent = "No text selected. Please capture text first.";
       return;
     }
     
-    // Process based on selected option
     if (selectedOption === 'summaryOption') {
       sendTextToFlask(selectedText);
     } else if (selectedOption === 'synopsisOption') {
@@ -99,25 +74,18 @@ dropdown.addEventListener('change', function() {
   });
 });
 
-// Refresh button handler
-refreshButton.addEventListener('click', function() {
-  requestFreshSelection();
-});
-
 // Send text to Flask backend
 function sendTextToFlask(text) {
   output.textContent = "Processing...";
   
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     if (!tabs || !tabs.length) {
-      output.textContent = "No active tab found.";
+      output.textContent = "No active tab found";
       return;
     }
     
     const pdfUrl = tabs[0].url;
     const backendUrl = 'http://127.0.0.1:5000/receive-text';
-    
-    console.log("Sending to Flask:", text.substring(0, 50) + "...");
     
     fetch(backendUrl, {
       method: 'POST',
