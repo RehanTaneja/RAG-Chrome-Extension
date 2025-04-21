@@ -92,4 +92,21 @@ function sendTextToFlask(highlightedTextContent) {
     });
 }
 
+function captureSelectedText() {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            func: () => {
+                const selection = window.getSelection().toString().trim();
+                if (selection) {
+                    chrome.storage.local.set({ selectedText: selection });
+                    console.log("Injected script stored selection:", selection);
+                } else {
+                    console.log("No text selected.");
+                }
+            }
+        });
+    });
+}
+
 
