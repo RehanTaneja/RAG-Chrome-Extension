@@ -3,43 +3,32 @@ console.log("Background script running");
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "captureSelection") {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (!tabs || !tabs.length) {
-        sendResponse({error: "No active tab"});
-        return;
-      }
-      
-      // First check if URL is a PDF
-      const url = tabs[0].url;
-      const isPDF = url.toLowerCase().endsWith('.pdf') || url.includes('pdf');
-      
-      // Execute script to capture the selection with special PDF handling
-      chrome.scripting.executeScript({
-        target: {tabId: tabs[0].id},
-        function: getSelectionFromPage,
-        args: [isPDF]
-      }).then(results => {
-        if (results && results[0]) {
-          const selectedText = results[0].result;
-          
-          if (selectedText) {
-            // Store the selection
-            chrome.storage.local.set({selectedText: selectedText}, () => {
-              console.log("Selection saved:", selectedText.substring(0, 50) + "...");
-              sendResponse({text: selectedText});
-            });
-          } else {
-            console.log("No text selected");
-            sendResponse({text: ""});
-          }
-        } else {
-          sendResponse({error: "Failed to get selection"});
-        }
-      }).catch(error => {
-        console.error("Script execution error:", error);
-        sendResponse({error: error.message});
-      });
-    });
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
++      if (chrome.runtime.lastError || !tabs || tabs.length === 0) {
++        sendResponse({ error: chrome.runtime.lastError?.message || "No active tab found" });
++        return;
++      }
++
++      const tab = tabs[0];
++      const isPDF = tab.url.toLowerCase().endsWith('.pdf');
++
++      chrome.scripting.executeScript({
++        target: { tabId: tab.id },
++        func: getSelectionFromPage,
++        args: [isPDF]
++      })
++      .then(([injection]) => {
++        const text = injection.result || "";
++        chrome.storage.local.set({ selectedText: text }, () => {
++          console.log("Selection saved:", text.substring(0, 50) + "…");
++          sendResponse({ text });
++        });
++      })
++      .catch(err => {
++        console.error("Script execution error:", err);
++        sendResponse({ error: err.message });
++      });
++    });
     
     return true; // Keep the messaging channel open for async response
   }
