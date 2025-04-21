@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Research Paper Toolkit",
+  "name": "PDF Research Toolkit",
   "version": "1.0",
+  "description": "Helps with PDF research papers",
   "permissions": ["tabs", "activeTab", "scripting", "storage"],
-  "host_permissions": ["file://*/*", "*://*/*", "<all_urls>", "http://127.0.0.1/*"],
+  "host_permissions": ["<all_urls>", "http://127.0.0.1/*"],
   "action": {
-    "default_popup": "index.html",
-    "default_title": "Research Paper Toolkit"
+    "default_popup": "popup.html",
+    "default_title": "PDF Research Toolkit"
   },
   "background": {
     "service_worker": "background.js"
@@ -17,6 +18,12 @@
       "js": ["content.js"],
       "run_at": "document_end",
       "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["pdf-inject.js"],
+      "matches": ["<all_urls>"]
     }
   ]
 }
