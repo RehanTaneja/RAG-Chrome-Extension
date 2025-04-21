@@ -7,9 +7,27 @@ const highlightedText = document.getElementById('highlightedText');
 dropdown.addEventListener("change", function () {
     const selectedOption = dropdown.value;
     if (!selectedOption) {
-    output.textContent = "Please select an option.";
-    return;
+        output.textContent = "Please select an option.";
+        return;
     }
+
+    captureSelectedText(() => {
+        getSelectedText((selectedText) => {
+            if (!selectedText) {
+                output.textContent = "No text selected.";
+                return;
+            }
+            if (selectedOption === 'summaryOption') {
+                sendTextToFlask(selectedText);
+            } else if (selectedOption === 'synopsisOption') {
+                output.textContent = "Synopsis generation coming soon...";
+            } else if (selectedOption === 'linkOption') {
+                output.textContent = "Linking option coming soon...";
+            }
+        });
+    });
+});
+
 captureSelectedText(); // Inject selection-grabbing code first
 setTimeout(() => {
   getSelectedText((selectedText) => {
@@ -89,7 +107,7 @@ function sendTextToFlask(highlightedTextContent) {
     });
 }
 
-function captureSelectedText() {
+function captureSelectedText(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         chrome.scripting.executeScript({
             target: { tabId: tabs[0].id },
@@ -98,12 +116,18 @@ function captureSelectedText() {
                 if (selection) {
                     chrome.storage.local.set({ selectedText: selection });
                     console.log("Injected script stored selection:", selection);
+                    return selection;
                 } else {
                     console.log("No text selected.");
+                    return null;
                 }
             }
+        }, (injectionResults) => {
+            console.log("Injection Results:", injectionResults);
+            callback();  // Proceed after script runs
         });
     });
 }
+
 
 
