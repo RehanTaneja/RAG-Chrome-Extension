@@ -4,7 +4,9 @@
   "version": "1.0",
   "description": "Detects copied text in PDFs and shows it in the popup.",
   "permissions": [
-    "storage"
+    "storage",
+    "scripting",
+    "activeTab"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -16,7 +18,8 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "match_origin_as_fallback": true
     }
   ],
   "action": {
