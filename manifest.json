@@ -7,8 +7,7 @@
     "storage"
   ],
   "host_permissions": [
-    "<all_urls>",
-    "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js"
