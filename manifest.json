@@ -1,13 +1,24 @@
 {
   "manifest_version": 3,
-  "name": "PDF Text Extractor",
+  "name": "Clipboard Text Listener",
   "version": "1.0",
-  "permissions": ["scripting", "activeTab", "storage"],
-  "action": {
-    "default_popup": "popup.html"
-  },
+  "description": "Captures copied text and shows it in the popup.",
+  "permissions": ["storage", "scripting", "activeTab", "clipboardRead"],
   "background": {
     "service_worker": "background.js"
   },
-  "host_permissions": ["<all_urls>"]
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "48": "icon.png"
+  }
 }
