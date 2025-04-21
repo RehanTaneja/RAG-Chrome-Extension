@@ -1,49 +1,74 @@
 // content.js
-console.log("[Content Script] Loaded and running");
+console.log("Content script loaded");
 
-// Create a more robust selection capture function
-function captureSelection() {
-    try {
-        const selectedText = window.getSelection().toString().trim();
-        
-        if (selectedText && selectedText.length > 0) {
-            console.log("[Content Script] Text selected:", selectedText.substring(0, 30) + "...");
-            
-            // Store the selection in chrome.storage
-            chrome.storage.local.set({ selectedText: selectedText }, () => {
-                console.log("[Content Script] Text stored in chrome.storage");
-            });
-            
-            // Also send a message to the extension to be extra safe
-            chrome.runtime.sendMessage({
-                action: "textSelected",
-                text: selectedText
-            }, (response) => {
-                console.log("[Content Script] Message sent to extension");
-            });
-        }
-    } catch (error) {
-        console.error("[Content Script] Error capturing selection:", error);
-    }
+// Check if page is a PDF
+function isPDF() {
+  return document.contentType === 'application/pdf' || 
+         window.location.href.toLowerCase().endsWith('.pdf') ||
+         document.querySelector('embed[type="application/pdf"]') ||
+         document.querySelector('object[type="application/pdf"]');
 }
 
-// Use multiple events to ensure we capture the selection
-document.addEventListener("mouseup", captureSelection);
-document.addEventListener("keyup", captureSelection);
-document.addEventListener("selectionchange", function() {
-    // Delay to ensure selection is complete
-    setTimeout(captureSelection, 200);
+// Inject script into the page to access PDF viewer
+function injectPDFScript() {
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('pdf-inject.js');
+  (document.head || document.documentElement).appendChild(script);
+  console.log("PDF script injected");
+}
+
+// Listen for messages from the injected script
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'FROM_PDF_PAGE') {
+    console.log("Received selection from PDF page:", event.data.text.substring(0, 50) + "...");
+    
+    // Save to storage
+    chrome.storage.local.set({selectedText: event.data.text}, function() {
+      console.log("Selection saved to storage");
+    });
+    
+    // Also notify the background script
+    chrome.runtime.sendMessage({
+      action: 'pdfTextSelected',
+      text: event.data.text
+    });
+  }
 });
 
-// Initial capture in case text is already selected
-captureSelection();
-
-// Add a message listener for the popup requesting selection
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "getSelection") {
-        const selectedText = window.getSelection().toString().trim();
-        console.log("[Content Script] Selection requested by popup:", selectedText ? "Text found" : "No text");
-        sendResponse({ text: selectedText });
+// For non-PDF pages, use standard selection capture
+function captureStandardSelection() {
+  function saveSelection() {
+    const selectedText = window.getSelection().toString().trim();
+    if (selectedText) {
+      console.log("Standard selection captured:", selectedText.substring(0, 50) + "...");
+      chrome.storage.local.set({selectedText: selectedText});
+      chrome.runtime.sendMessage({
+        action: 'textSelected', 
+        text: selectedText
+      });
     }
-    return true; // Indicates async response
+  }
+  
+  document.addEventListener('mouseup', saveSelection);
+  document.addEventListener('keyup', function(e) {
+    if (e.key === 'c' && e.ctrlKey) saveSelection();
+  });
+}
+
+// Setup based on page type
+if (isPDF()) {
+  console.log("PDF detected - using specialized selection capture");
+  injectPDFScript();
+} else {
+  console.log("Standard page - using normal selection capture");
+  captureStandardSelection();
+}
+
+// Respond to requests from popup
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message.action === 'getSelection') {
+    const selectedText = window.getSelection().toString().trim();
+    sendResponse({text: selectedText});
+  }
+  return true;
 });
