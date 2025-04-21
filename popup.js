@@ -28,7 +28,7 @@ dropdown.addEventListener("change", function () {
     });
 });
 
-captureSelectedText(); // Inject selection-grabbing code first
+captureSelectedText(() => {}); // Inject selection-grabbing code first
 setTimeout(() => {
   getSelectedText((selectedText) => {
     if (dropdown.value === 'summaryOption') {
@@ -113,19 +113,23 @@ function captureSelectedText(callback) {
             target: { tabId: tabs[0].id },
             func: () => {
                 const selection = window.getSelection().toString().trim();
-                if (selection) {
-                    chrome.storage.local.set({ selectedText: selection });
-                    console.log("Injected script stored selection:", selection);
-                    return selection;
-                } else {
-                    console.log("No text selected.");
-                    return null;
-                }
+                return selection || null;
             }
+
         }, (injectionResults) => {
-            console.log("Injection Results:", injectionResults);
-            callback();  // Proceed after script runs
-        });
+            if (chrome.runtime.lastError) {
+                console.error("Injection error:", chrome.runtime.lastError.message);
+                return;
+            }
+            const result = injectionResults?.[0]?.result;
+            if (result) {
+                chrome.storage.local.set({ selectedText: result }, () => {
+                console.log("Selected text stored:", result);
+                });
+            }
+            callback();
+    });
+
     });
 }
 
