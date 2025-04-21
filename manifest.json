@@ -2,20 +2,21 @@
   "manifest_version": 3,
   "name": "Research Paper Toolkit",
   "version": "1.0",
-  "permissions": ["tabs", "activeTab", "scripting", "storage"
-],
-  "host_permissions": ["file://*/*", "*://*/*",  "<all_urls>", "http://127.0.0.1/*"
-  
-],
+  "permissions": ["tabs", "activeTab", "scripting", "storage"],
+  "host_permissions": ["file://*/*", "*://*/*", "<all_urls>", "http://127.0.0.1/*"],
   "action": {
     "default_popup": "index.html",
     "default_title": "Research Paper Toolkit"
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "all_frames": true
     }
   ]
 }
