@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Captures copied text and shows it in the popup.",
   "permissions": ["storage", "scripting", "activeTab", "clipboardRead"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
