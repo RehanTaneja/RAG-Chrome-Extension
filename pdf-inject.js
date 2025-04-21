@@ -1,45 +1,64 @@
 // pdf-inject.js
 console.log("PDF injection script loaded");
 
-// Function that will run in the context of the PDF viewer
 function captureTextFromPDF() {
+  let isChromePDFViewer = false;
+  
   try {
-    // For Chrome's PDF viewer
+    // Detect Chrome's PDF viewer
     if (window.PDFViewerApplication) {
-      window.PDFViewerApplication.pdfViewer.eventBus.on('textlayerrendered', function() {
-        console.log("PDF text layer rendered");
+      isChromePDFViewer = true;
+      console.log("Detected Chrome PDF viewer");
+      
+      // Wait until the document is fully loaded
+      if (document.readyState === 'complete') {
+        initPDFHandlers();
+      } else {
+        window.addEventListener('load', initPDFHandlers);
+      }
+    }
+    
+    // General PDF handling
+    if (!isChromePDFViewer) {
+      monitorSelection();
+    }
+
+    function initPDFHandlers() {
+      console.log("Initializing PDF handlers");
+      
+      // Hook into text layer updates
+      const eventBus = window.PDFViewerApplication.eventBus;
+      eventBus.on('textlayerrendered', function(event) {
+        console.log("Text layer rendered, page:", event.pageNumber);
         monitorSelection();
       });
+
+      // Initial check in case text layer was already rendered
+      monitorSelection();
     }
-    
-    // General selection monitoring
-    monitorSelection();
-    
+
     function monitorSelection() {
-      document.addEventListener('mouseup', sendSelectedText);
-      document.addEventListener('keyup', function(e) {
-        if (e.key === 'c' && e.ctrlKey) sendSelectedText();
-      });
+      console.log("Setting up selection monitoring");
+      document.addEventListener('mouseup', handleSelection);
+      document.addEventListener('keyup', handleKeySelection);
     }
 
-    function sendSelectedText() {
+    function handleKeySelection(e) {
+      if (e.ctrlKey && e.key === 'c') {
+        handleSelection();
+      }
+    }
+
+    function handleSelection() {
       setTimeout(() => {
-        const selectedText = window.getSelection().toString().trim();
+        const selection = window.getSelection();
+        const selectedText = selection ? selection.toString().trim() : '';
+        
         if (selectedText) {
-          console.log("Selected text in PDF:", selectedText.substring(0, 50) + "...");
-          
-          // Use postMessage to communicate with content script
+          console.log("PDF selection detected:", selectedText.substring(0, 50));
           window.postMessage({
-            type: "FROM_PDF_PAGE",
+            source: 'PDF_TEXT_SELECTION',
             text: selectedText
-          }, "*");
+          }, '*');
         }
-      }, 100);
-    }
-  } catch (e) {
-    console.error("Error in PDF injection:", e);
-  }
-}
-
-// Execute immediately
-captureTextFromPDF();
+      }, 
