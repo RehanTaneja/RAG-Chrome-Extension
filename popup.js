@@ -1,67 +1,100 @@
+// popup.js
+console.log("[Popup] Script initialized");
+
 const dropdown = document.getElementById('dropdown');
 dropdown.value = "";
 const output = document.getElementById('output');
 const highlightedText = document.getElementById('highlightedText');
 
-// When the popup opens, immediately try to retrieve stored selection
+// When popup opens, check for stored selection and request fresh selection
 document.addEventListener('DOMContentLoaded', function() {
-    getSelectedText((selectedText) => {
-        if (selectedText) {
-            highlightedText.textContent = `Selected text: ${selectedText.substring(0, 50)}${selectedText.length > 50 ? '...' : ''}`;
+    output.textContent = "Loading selection...";
+    
+    // First, check if we have a stored selection
+    chrome.storage.local.get('selectedText', (data) => {
+        console.log("[Popup] Checking stored selection:", data);
+        
+        if (data && data.selectedText) {
+            displaySelection(data.selectedText);
         } else {
-            highlightedText.textContent = "No text selected. Please select text in the document.";
+            output.textContent = "No stored selection found. Please select text.";
         }
+        
+        // Also request the current selection from the content script
+        requestFreshSelection();
     });
 });
 
-// When the dropdown value changes, process the selected text
+// When dropdown value changes, process the selection
 dropdown.addEventListener("change", function() {
     const selectedOption = dropdown.value;
     if (!selectedOption) {
         output.textContent = "Please select an option.";
         return;
     }
-
-    getSelectedText((selectedText) => {
+    
+    chrome.storage.local.get('selectedText', (data) => {
+        const selectedText = data.selectedText;
+        
         if (!selectedText) {
-            output.textContent = "No text selected. Please select text in the document.";
+            output.textContent = "No text selected. Please select text first.";
             return;
         }
         
-        if (selectedOption === 'summaryOption') {
-            sendTextToFlask(selectedText);
-        } else if (selectedOption === 'synopsisOption') {
-            output.textContent = "Synopsis generation coming soon...";
-        } else if (selectedOption === 'linkOption') {
-            output.textContent = "Linking option coming soon...";
-        }
+        processSelection(selectedText, selectedOption);
     });
 });
 
-/**
- * Retrieves the selected text from chrome.storage.
- */
-function getSelectedText(callback) {
-    console.log("Retrieving selected text from storage...");
+// Function to request fresh selection from content script
+function requestFreshSelection() {
+    console.log("[Popup] Requesting fresh selection from content script");
     
-    chrome.storage.local.get('selectedText', (data) => {
-        console.log("Retrieved data:", data);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs || !tabs.length) return;
         
-        if (data && data.selectedText) {
-            callback(data.selectedText);
-        } else {
-            callback(null);
+        try {
+            chrome.tabs.sendMessage(tabs[0].id, { action: "getSelection" }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.log("[Popup] Error getting selection:", chrome.runtime.lastError.message);
+                    return;
+                }
+                
+                if (response && response.text) {
+                    console.log("[Popup] Fresh selection received");
+                    displaySelection(response.text);
+                    chrome.storage.local.set({ selectedText: response.text });
+                }
+            });
+        } catch (error) {
+            console.error("[Popup] Error sending message:", error);
         }
     });
 }
 
-/**
- * Sends the highlighted text along with the active tab's URL to the Flask backend.
- */
-function sendTextToFlask(highlightedTextContent) {
-    const output = document.getElementById("output");
-    output.textContent = "Processing...";
+// Display the selection in the UI
+function displaySelection(text) {
+    if (!text) return;
+    
+    const preview = text.length > 50 ? text.substring(0, 50) + "..." : text;
+    highlightedText.textContent = `Selected text: ${preview}`;
+    output.textContent = "Selection loaded. Choose an option from the dropdown.";
+}
 
+// Process the selection based on the dropdown option
+function processSelection(text, option) {
+    if (option === 'summaryOption') {
+        sendTextToFlask(text);
+    } else if (option === 'synopsisOption') {
+        output.textContent = "Synopsis generation coming soon...";
+    } else if (option === 'linkOption') {
+        output.textContent = "Linking option coming soon...";
+    }
+}
+
+// Send text to Flask backend
+function sendTextToFlask(highlightedTextContent) {
+    output.textContent = "Processing...";
+    
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         if (!tabs || !tabs.length) {
             output.textContent = "No active tab found.";
@@ -70,22 +103,21 @@ function sendTextToFlask(highlightedTextContent) {
         
         const pdfUrl = tabs[0].url;
         const backendUrl = localStorage.getItem('backendUrl') || 'http://127.0.0.1:5000/receive-text';
-
-        console.log("Sending data to backend:", highlightedTextContent, pdfUrl);
-
+        
+        console.log("[Popup] Sending data to backend:", highlightedTextContent.substring(0, 30) + "...");
+        
         fetch(backendUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             mode: 'cors',
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 highlightedTextContent: highlightedTextContent,
                 url: pdfUrl
             })
         })
         .then(response => {
-            console.log('Response status:', response.status, response.statusText);
             if (!response.ok) {
-                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                throw new Error(`Server error: ${response.status}`);
             }
             return response.json();
         })
@@ -97,8 +129,13 @@ function sendTextToFlask(highlightedTextContent) {
             }
         })
         .catch(error => {
-            console.error("Fetch error:", error.message);
-            output.textContent = "Error sending text to backend: " + error.message;
+            console.error("[Popup] Fetch error:", error.message);
+            output.textContent = "Error: " + error.message;
         });
     });
 }
+
+// Add "Refresh Selection" button functionality
+document.getElementById('refreshButton')?.addEventListener('click', function() {
+    requestFreshSelection();
+});
