@@ -1,10 +1,9 @@
-// Run in every page—including PDF viewer
-document.addEventListener('copy', (event) => {
-  const selectedText = window.getSelection().toString().trim();
-  if (selectedText) {
-    chrome.runtime.sendMessage({
-      action: 'copiedText',
-      text: selectedText
-    });
+console.log('[CS] loaded into', window.location.href);
+
+document.addEventListener('copy', () => {
+  const text = window.getSelection().toString().trim();
+  console.log('[CS] copy event →', text);
+  if (text) {
+    chrome.runtime.sendMessage({ action: 'copiedText', text });
   }
 });
