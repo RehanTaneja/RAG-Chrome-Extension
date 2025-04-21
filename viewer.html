@@ -4,16 +4,24 @@
   <meta charset="utf-8">
   <title>PDF.js Viewer</title>
   <style>
-    body { margin: 0; overflow: auto; }
-    #container { position: relative; }
-    canvas { display: block; margin: auto; }
+    body { margin: 0; background: #eee; }
+    #container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: auto;
+      background: #333;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+    }
+    /* textLayer sits on top of canvas */
     .textLayer {
       position: absolute;
       top: 0;
       left: 0;
       pointer-events: none;
-      font-family: sans-serif;
-      line-height: 1;
     }
   </style>
 </head>
@@ -23,43 +31,66 @@
     <div id="textLayer" class="textLayer"></div>
   </div>
 
-  <!-- 1. Load PDF.js from CDN -->
+  <!-- 1) Load PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.1.81/pdf.min.js"></script>
   <script>
-    // 2. Tell PDF.js where its worker lives
+    // 2) Grab the global export
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) {
+      console.error('❌ pdfjsLib not found on window!');
+      throw new Error('pdfjsLib load failed');
+    }
+    // 3) Tell it where its worker lives
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.1.81/pdf.worker.min.js';
 
-    // 3. Read the `file` query param (original PDF URL)
-    const urlParam = new URL(location).searchParams.get('file');
-    const pdfUrl = decodeURIComponent(urlParam);
+    // 4) Pull the original PDF URL from ?file=
+    const params = new URLSearchParams(location.search);
+    const fileParam = params.get('file');
+    if (!fileParam) {
+      console.error('❌ No "file" query parameter present');
+      document.body.innerHTML = '<p style="color:red;padding:1rem">Error: no file specified</p>';
+      throw new Error('missing file param');
+    }
+    const pdfUrl = decodeURIComponent(fileParam);
 
-    // 4. Load and render the first page
-    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-      pdf.getPage(1).then(page => {
+    // 5) Load the PDF and render page 1
+    pdfjsLib.getDocument(pdfUrl).promise
+      .then(pdf => pdf.getPage(1))
+      .then(page => {
         const scale = 1.5;
         const viewport = page.getViewport({ scale });
-
-        // Render page onto canvas
         const canvas = document.getElementById('pdf-canvas');
+        const textLayerDiv = document.getElementById('textLayer');
+
+        // size canvas & textLayer container
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        page.render({
-          canvasContext: canvas.getContext('2d'),
-          viewport
-        });
+        textLayerDiv.style.width  = viewport.width + 'px';
+        textLayerDiv.style.height = viewport.height + 'px';
 
-        // Render text layer on top for selectable text
-        page.getTextContent().then(textContent => {
-          pdfjsLib.renderTextLayer({
-            textContent,
-            container: document.getElementById('textLayer'),
-            viewport,
-            textDivs: []
-          });
+        // render into canvas
+        return Promise.all([
+          page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise,
+          page.getTextContent()
+        ]);
+      })
+      .then(([_, textContent]) => {
+        // render the text layer over the canvas
+        pdfjsLib.renderTextLayer({
+          textContent,
+          container: document.getElementById('textLayer'),
+          viewport: pdfjsLib.getDocument, // reuse last viewport via closure
+          textDivs: []
         });
+      })
+      .catch(err => {
+        console.error('❌ PDF.js rendering error:', err);
+        document.body.innerHTML = `
+          <p style="color:red;padding:1rem">
+            Error rendering PDF:<br><code>${err.message}</code>
+          </p>`;
       });
-    });
   </script>
 </body>
 </html>
