@@ -132,3 +132,27 @@ function getSelectionFromPage(isPDF) {
   // If nothing worked, return empty string
   return "";
 }
+// background.js (partial update)
+function getSelectionFromPage(isPDF) {
+  let retries = 0;
+  const maxRetries = 3;
+
+  function tryGetSelection() {
+    const selection = window.getSelection();
+    let text = selection ? selection.toString().trim() : '';
+    
+    if (text) return text;
+    
+    if (isPDF && retries < maxRetries) {
+      retries++;
+      console.log(`No selection found, retrying (${retries}/${maxRetries})`);
+      return new Promise(resolve => 
+        setTimeout(() => resolve(tryGetSelection()), 300)
+      );
+    }
+    
+    return text;
+  }
+
+  return tryGetSelection();
+}
