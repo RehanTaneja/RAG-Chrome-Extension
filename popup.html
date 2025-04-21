@@ -12,26 +12,17 @@
       margin-top: 0;
       color: #333;
     }
-    .section {
-      margin-bottom: 15px;
-    }
     #selectionContainer {
       border: 1px solid #ddd;
       padding: 10px;
       max-height: 150px;
       overflow-y: auto;
       background-color: #f9f9f9;
-      font-size: 14px;
       margin-bottom: 15px;
+      font-size: 14px;
+      line-height: 1.4;
     }
-    .status {
-      font-style: italic;
-      color: #666;
-      margin-bottom: 10px;
-    }
-    #dropdown {
-      width: 100%;
-      padding: 8px;
+    .controls {
       margin-bottom: 15px;
     }
     button {
@@ -41,43 +32,50 @@
       padding: 8px 12px;
       cursor: pointer;
       border-radius: 4px;
+      margin-right: 5px;
     }
     button:hover {
       background-color: #3367d6;
     }
+    select {
+      padding: 8px;
+      width: 100%;
+      margin-bottom: 15px;
+    }
     #output {
       border: 1px solid #ddd;
       padding: 10px;
-      min-height: 60px;
       background-color: #f9f9f9;
+      min-height: 60px;
+    }
+    .instructions {
+      font-style: italic;
+      color: #666;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <h2>PDF Text Extractor</h2>
   
-  <div class="status">Select text in your PDF document first</div>
-  
-  <div class="section">
-    <h3>Selected Text:</h3>
-    <div id="selectionContainer">No text selected yet. Please select text in your PDF.</div>
-    <button id="refreshButton">Refresh Selection</button>
+  <div class="instructions">
+    Select text in your PDF, then click "Capture Selection" below
   </div>
   
-  <div class="section">
-    <h3>Choose Action:</h3>
-    <select id="dropdown">
-      <option value="">-- Select Option --</option>
-      <option value="summaryOption">Generate Summary</option>
-      <option value="synopsisOption">Create Synopsis</option>
-      <option value="linkOption">Find Related Links</option>
-    </select>
+  <div id="selectionContainer">No text captured yet</div>
+  
+  <div class="controls">
+    <button id="captureButton">Capture Selection</button>
   </div>
   
-  <div class="section">
-    <h3>Result:</h3>
-    <div id="output">Results will appear here.</div>
-  </div>
+  <select id="actionDropdown">
+    <option value="">-- Select Action --</option>
+    <option value="summaryOption">Generate Summary</option>
+    <option value="synopsisOption">Create Synopsis</option>
+    <option value="linkOption">Find Related Links</option>
+  </select>
+  
+  <div id="output">Results will appear here</div>
   
   <script src="popup.js"></script>
 </body>
