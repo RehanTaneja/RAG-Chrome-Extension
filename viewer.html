@@ -8,7 +8,9 @@
     #container { position: relative; }
     canvas { display: block; margin: auto; }
     .textLayer {
-      position: absolute; top: 0; left: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
       pointer-events: none;
       font-family: sans-serif;
       line-height: 1;
@@ -21,24 +23,33 @@
     <div id="textLayer" class="textLayer"></div>
   </div>
 
-  <script src="pdf.js"></script>
+  <!-- 1. Load PDF.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.1.81/pdf.min.js"></script>
   <script>
+    // 2. Tell PDF.js where its worker lives
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.1.81/pdf.worker.min.js';
+
+    // 3. Read the `file` query param (original PDF URL)
     const urlParam = new URL(location).searchParams.get('file');
     const pdfUrl = decodeURIComponent(urlParam);
 
-    // configure PDF.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('pdf.worker.js');
-
+    // 4. Load and render the first page
     pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
       pdf.getPage(1).then(page => {
         const scale = 1.5;
         const viewport = page.getViewport({ scale });
 
+        // Render page onto canvas
         const canvas = document.getElementById('pdf-canvas');
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        page.render({ canvasContext: canvas.getContext('2d'), viewport });
+        page.render({
+          canvasContext: canvas.getContext('2d'),
+          viewport
+        });
 
+        // Render text layer on top for selectable text
         page.getTextContent().then(textContent => {
           pdfjsLib.renderTextLayer({
             textContent,
