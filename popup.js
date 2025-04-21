@@ -1,12 +1,17 @@
-function updateDisplay() {
-  chrome.storage.local.get('copiedText', (data) => {
-    const text = data.copiedText || 'No text copied yet.';
-    document.getElementById('copiedText').textContent = text;
-  });
+async function updateDisplay() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('copiedText').textContent =
+      text.trim() || 'No text on your clipboard.';
+  } catch (err) {
+    console.error('Clipboard read failed:', err);
+    document.getElementById('copiedText').textContent =
+      '⚠️ Unable to read clipboard.';
+  }
 }
 
-// Refresh on button click
-document.getElementById('refresh').addEventListener('click', updateDisplay);
+document
+  .getElementById('refresh')
+  .addEventListener('click', updateDisplay);
 
-// Load when popup opens
 document.addEventListener('DOMContentLoaded', updateDisplay);
