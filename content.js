@@ -100,3 +100,19 @@ if (isPDF()) {
 
 // Send a ready message
 chrome.runtime.sendMessage({action: "contentScriptReady"});
+// content.js (partial update)
+window.addEventListener('message', function(event) {
+  if (event.source !== window) return;
+  
+  if (event.data && event.data.source === 'PDF_TEXT_SELECTION') {
+    console.log("Received PDF selection:", event.data.text);
+    
+    // Store and forward the selection
+    chrome.storage.local.set({selectedText: event.data.text}, () => {
+      chrome.runtime.sendMessage({
+        action: "selectionUpdated",
+        text: event.data.text
+      });
+    });
+  }
+});
