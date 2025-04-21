@@ -33,7 +33,10 @@ captureButton.addEventListener('click', function() {
     } else if (response.text) {
       displaySelection(response.text);
     } else {
-      selectionContainer.textContent = "No text selected. Please select text in your document and try again.";
+      selectionContainer.textContent = "No text selected. Please make sure to:\n\n" +
+                                     "1. Open a PDF document\n" +
+                                     "2. Select text with your mouse\n" +
+                                     "3. Try clicking this button again";
     }
   });
 });
