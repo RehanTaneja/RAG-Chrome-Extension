@@ -1,15 +1,15 @@
 // background.js
 console.log("Background script running");
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "captureSelection") {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  if (chrome.runtime.lastError || !tabs || tabs.length === 0) {
-    sendResponse({
-      error: chrome.runtime.lastError?.message || 'No active tab found'
+chrome.runtime.onMessage.addListener((msg, sender) => {
+  if (msg.action === 'storeSelection') {
+    chrome.storage.local.set({ selectedText: msg.text }, () => {
+      console.log('📥 PDF text stored:', msg.text.substring(0, 50) + '…');
     });
-    return;
+    // no sendResponse needed
   }
+});
+
 
   const tab = tabs[0];
   const isPDF = tab.url.toLowerCase().endsWith('.pdf');
