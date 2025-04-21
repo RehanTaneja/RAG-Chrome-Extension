@@ -4,31 +4,34 @@ console.log("Background script running");
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "captureSelection") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-+      if (chrome.runtime.lastError || !tabs || tabs.length === 0) {
-+        sendResponse({ error: chrome.runtime.lastError?.message || "No active tab found" });
-+        return;
-+      }
-+
-+      const tab = tabs[0];
-+      const isPDF = tab.url.toLowerCase().endsWith('.pdf');
-+
-+      chrome.scripting.executeScript({
-+        target: { tabId: tab.id },
-+        func: getSelectionFromPage,
-+        args: [isPDF]
-+      })
-+      .then(([injection]) => {
-+        const text = injection.result || "";
-+        chrome.storage.local.set({ selectedText: text }, () => {
-+          console.log("Selection saved:", text.substring(0, 50) + "…");
-+          sendResponse({ text });
-+        });
-+      })
-+      .catch(err => {
-+        console.error("Script execution error:", err);
-+        sendResponse({ error: err.message });
-+      });
-+    });
+  if (chrome.runtime.lastError || !tabs || tabs.length === 0) {
+    sendResponse({
+      error: chrome.runtime.lastError?.message || 'No active tab found'
+    });
+    return;
+  }
+
+  const tab = tabs[0];
+  const isPDF = tab.url.toLowerCase().endsWith('.pdf');
+
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: getSelectionFromPage,
+    args: [isPDF]
+  })
+  .then(([injection]) => {
+    const text = injection.result || '';
+    chrome.storage.local.set({ selectedText: text }, () => {
+      console.log('Selection saved:', text.substring(0, 50) + '…');
+      sendResponse({ text });
+    });
+  })
+  .catch((err) => {
+    console.error('Script execution error:', err);
+    sendResponse({ error: err.message });
+  });
+});
+
     
     return true; // Keep the messaging channel open for async response
   }
