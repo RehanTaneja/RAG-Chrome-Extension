@@ -1,61 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>PDF Research Toolkit</title>
+  <title>PDF Text Extractor</title>
   <style>
     body {
-      width: 350px;
+      width: 400px;
       font-family: Arial, sans-serif;
-      padding: 10px;
+      padding: 15px;
     }
-    #selectedTextPreview {
-      margin: 10px 0;
-      padding: 10px;
-      border: 1px solid #ccc;
-      max-height: 100px;
-      overflow-y: auto;
-      font-size: 12px;
-      background-color: #f5f5f5;
+    h2 {
+      margin-top: 0;
+      color: #333;
     }
-    button {
-      margin: 5px;
-      padding: 5px 10px;
+    .section {
+      margin-bottom: 15px;
     }
-    select {
-      width: 100%;
-      margin: 10px 0;
-      padding: 5px;
-    }
-    #output {
-      margin-top: 10px;
-      padding: 10px;
+    #selectionContainer {
       border: 1px solid #ddd;
-      min-height: 50px;
+      padding: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+      font-size: 14px;
+      margin-bottom: 15px;
     }
     .status {
-      color: #666;
       font-style: italic;
+      color: #666;
       margin-bottom: 10px;
+    }
+    #dropdown {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    #output {
+      border: 1px solid #ddd;
+      padding: 10px;
+      min-height: 60px;
+      background-color: #f9f9f9;
     }
   </style>
 </head>
 <body>
-  <h2>PDF Research Toolkit</h2>
+  <h2>PDF Text Extractor</h2>
   
-  <div class="status">Select text in your PDF, then use the options below.</div>
+  <div class="status">Select text in your PDF document first</div>
   
-  <div id="selectedTextPreview">No text selected yet. Please select text in your PDF document.</div>
+  <div class="section">
+    <h3>Selected Text:</h3>
+    <div id="selectionContainer">No text selected yet. Please select text in your PDF.</div>
+    <button id="refreshButton">Refresh Selection</button>
+  </div>
   
-  <button id="refreshSelection">Refresh Selection</button>
+  <div class="section">
+    <h3>Choose Action:</h3>
+    <select id="dropdown">
+      <option value="">-- Select Option --</option>
+      <option value="summaryOption">Generate Summary</option>
+      <option value="synopsisOption">Create Synopsis</option>
+      <option value="linkOption">Find Related Links</option>
+    </select>
+  </div>
   
-  <select id="actionDropdown">
-    <option value="">-- Select Action --</option>
-    <option value="summaryOption">Generate Summary</option>
-    <option value="synopsisOption">Create Synopsis</option>
-    <option value="linkOption">Find Related Links</option>
-  </select>
-  
-  <div id="output">Output will appear here.</div>
+  <div class="section">
+    <h3>Result:</h3>
+    <div id="output">Results will appear here.</div>
+  </div>
   
   <script src="popup.js"></script>
 </body>
