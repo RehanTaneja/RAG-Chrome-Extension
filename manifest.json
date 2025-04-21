@@ -2,30 +2,13 @@
   "manifest_version": 3,
   "name": "PDF Text Extractor",
   "version": "1.0",
-  "description": "Extract text from PDFs via PDF.js",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage"
-  ],
-  "host_permissions": ["<all_urls>"],
-  "web_accessible_resources": [
-    {
-      "resources": ["viewer.html", "pdf.js", "pdf.worker.js"],
-      "matches": ["<all_urls>"]
-    }
-  ],
-  "content_scripts": [
-    {
-      "matches": ["*://*/*.pdf"],
-      "js": ["redirect.js"],
-      "run_at": "document_start"
-    }
-  ],
+  "permissions": ["scripting", "activeTab", "storage"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
   "background": {
     "service_worker": "background.js"
   },
-  "action": {
-    "default_popup": "popup.html"
-  }
+  "host_permissions": ["<all_urls>"]
 }
