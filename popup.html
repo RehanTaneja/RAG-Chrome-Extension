@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>PDF Clipboard Listener</title>
+    <style>
+      body {
+        width: 300px;
+        font-family: Arial, sans-serif;
+        padding: 10px;
+      }
+      #copiedText {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        border: 1px solid #ccc;
+        padding: 5px;
+        height: 150px;
+        overflow-y: auto;
+      }
+      #refresh {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>PDF Assistant</h3>
+
+    <!-- dropdown to choose action -->
+    <label for="action">Action:</label>
+    <select id="action">
+      <option value="synopsis">Synopsis</option>
+      <option value="define">Word Meaning</option>
+      <option value="chat">Chat</option>
+    </select>
+
+    <!-- show last copied text for synopsis/define -->
+    <div id="copiedText" style="white-space:pre-wrap; border:1px solid #ccc;
+         padding:5px; height:100px; overflow-y:auto; margin-top:8px;">
+      No text copied yet.
+    </div>
+    <button id="refresh" style="margin-top:8px;">Refresh</button>
+
+    <!-- chat input only shown when action=chat -->
+    <textarea id="chatInput" placeholder="Ask a question about the PDF…"
+      style="width:100%; height:60px; display:none; margin-top:8px;"></textarea>
+
+    <button id="process" style="margin-top:8px;">Go</button>
+    <div id="result" style="white-space:pre-wrap; border:1px solid #ddd;
+         padding:5px; height:120px; overflow-y:auto; margin-top:8px;">
+      Result will appear here.
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
