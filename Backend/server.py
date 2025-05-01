@@ -112,6 +112,10 @@ def handle_all_errors(e):
     logging.exception("Unhandled exception")
     return jsonify({"error": str(e)}), 500
 
+@app.route("/", methods=["GET"])
+def health_check():
+    return jsonify({"status":"ok"}), 200
+
 
 # ─── Run Server ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
