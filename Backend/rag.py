@@ -7,7 +7,9 @@ from chromadb.errors import NotFoundError
 from google.api_core import retry
 
 from data_extraction import extract_sections
-from API_KEY import API_KEY
+import os
+
+API_KEY = os.environ["GEMINI_API_KEY"]
 
 # ─── Configuration & Globals ───────────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO)
