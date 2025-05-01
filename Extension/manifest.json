@@ -8,9 +8,10 @@
     "storage",
     "tabs"
   ],
-  "host_permissions":[
-    "https://rag-chrome-extension-1.onrender.com"
-  ],
+  "host_permissions": [
+  "https://my-rag-service.onrender.com/*",
+  "<all_urls>"            
+],
   "action": {
     "default_popup": "popup.html"
   }
