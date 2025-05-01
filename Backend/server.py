@@ -16,27 +16,21 @@ from rag import (
 
 # ─── Flask Setup ───────────────────────────────────────────────────────────────
 app = Flask(__name__)
-CORS(app)  # allow all origins; tighten if needed
+CORS(app)
 logging.basicConfig(level=logging.INFO)
 
-# ─── Globals to track current PDF & load state ─────────────────────────────────
+# ─── Globals ───────────────────────────────────────────────────────────────────
 current_pdf_url = None
 current_pdf_path = None
 model_loading = False
 
 # ─── Helpers ───────────────────────────────────────────────────────────────────
 def download_pdf(url: str, timeout: int = 15) -> str:
-    """
-    Download a PDF from `url` into ./pdfs/ with a safe filename.
-    Returns the local filepath.
-    """
     os.makedirs("pdfs", exist_ok=True)
     safe_name = re.sub(r'\W+', '_', url)[:50] + ".pdf"
     local_path = os.path.join("pdfs", safe_name)
-
     if os.path.exists(local_path):
         return local_path
-
     logging.info(f"Downloading PDF from {url}")
     resp = requests.get(url, timeout=timeout)
     resp.raise_for_status()
@@ -44,32 +38,33 @@ def download_pdf(url: str, timeout: int = 15) -> str:
         f.write(resp.content)
     return local_path
 
-def _reload_model_bg(path: str):
-    """Background thread target to reload the RAG model."""
-    global model_loading
+def _download_and_reload(pdf_url: str):
+    """Download the PDF and reload the RAG model in background."""
+    global current_pdf_path, model_loading
     try:
+        path = download_pdf(pdf_url)
+        current_pdf_path = path
         reload_rag_model(path)
-        logging.info("Background RAG model reload complete")
+        logging.info("Background download & RAG reload complete")
     except Exception:
-        logging.exception("Background reload failed")
+        logging.exception("Background download/reload failed")
     finally:
         model_loading = False
 
 def ensure_pdf_loaded(pdf_url: str):
     """
-    If `pdf_url` is new, download it and trigger background RAG reload.
+    If this is a new PDF URL, kick off a background thread
+    to download & reload the model, and immediately return.
     """
-    global current_pdf_url, current_pdf_path, model_loading
+    global current_pdf_url, model_loading
     if pdf_url != current_pdf_url:
-        path = download_pdf(pdf_url)
         current_pdf_url = pdf_url
-        current_pdf_path = path
         model_loading = True
         thread = threading.Thread(
-            target=_reload_model_bg, args=(path,), daemon=True
+            target=_download_and_reload, args=(pdf_url,), daemon=True
         )
         thread.start()
-        logging.info(f"Started background RAG model reload for {pdf_url}")
+        logging.info(f"Started background download & reload for {pdf_url}")
 
 # ─── Health Check ──────────────────────────────────────────────────────────────
 @app.route("/", methods=["GET"])
@@ -80,9 +75,8 @@ def health_check():
 @app.route("/define", methods=["POST"])
 def define():
     data = request.get_json() or {}
-    text = data.get("text", "").strip()
+    text    = data.get("text", "").strip()
     pdf_url = data.get("pdfUrl", "").strip()
-
     if not pdf_url:
         return jsonify({"error": "Missing 'pdfUrl'"}), 400
 
@@ -99,9 +93,8 @@ def define():
 @app.route("/synopsis", methods=["POST"])
 def synopsis():
     data = request.get_json() or {}
-    text = data.get("text", "").strip()
+    text    = data.get("text", "").strip()
     pdf_url = data.get("pdfUrl", "").strip()
-
     if not pdf_url:
         return jsonify({"error": "Missing 'pdfUrl'"}), 400
 
@@ -120,8 +113,7 @@ def synopsis():
 def chat():
     data = request.get_json() or {}
     question = data.get("question", "").strip()
-    pdf_url = data.get("pdfUrl", "").strip()
-
+    pdf_url  = data.get("pdfUrl", "").strip()
     if not pdf_url:
         return jsonify({"error": "Missing 'pdfUrl'"}), 400
 
@@ -143,5 +135,5 @@ def handle_all_errors(e):
 
 # ─── Run Server ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    # debug=False for production
+    # debug=False for safety
     app.run(host="0.0.0.0", port=8000, debug=False)
