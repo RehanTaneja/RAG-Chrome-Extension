@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('result').textContent = '⏳ Loading…';
     try {
-      const res = await fetch(`https://rag-chrome-extension-1.onrender.com${endpoint}`, {
+      const res = await fetch(`https://rag-service-868962904696.us-central1.run.app${endpoint}`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(payload)
