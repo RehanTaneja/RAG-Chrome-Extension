@@ -9,7 +9,7 @@
     "tabs"
   ],
   "host_permissions": [
-  "https://rag-chrome-extension-1.onrender.com/*",
+  "https://rag-service-868962904696.us-central1.run.app/*",
   "<all_urls>"            
 ],
   "action": {
